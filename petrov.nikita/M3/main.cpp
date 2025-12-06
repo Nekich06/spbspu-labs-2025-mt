@@ -11,7 +11,7 @@
 namespace
 {
   using namespace petrov;
-	void initCmds(commands_map & cmds, circles_map & circles, sets_map & sets)
+	void initCmds(commands_map & cmds, circles_map & circles, sets_map & sets, processes_map & processes)
 	{
 		cmds.insert({ "circle", std::bind(createCircle, std::ref(std::cin), std::ref(circles)) });
 		cmds.insert({ "set", std::bind(createSet, std::ref(std::cin), std::ref(sets), std::cref(circles)) });
@@ -19,6 +19,8 @@ namespace
 		cmds.insert({ "showset", std::bind(showSetInfo, std::ref(std::cout), std::ref(std::cin), std::cref(sets)) });
 		cmds.insert({ "frame", std::bind(showShapeFrame, std::ref(std::cout), std::ref(std::cin), std::cref(circles)) });
 		cmds.insert({ "frameset", std::bind(showSetFrame, std::ref(std::cout), std::ref(std::cin), std::cref(sets)) });
+		cmds.insert({ "spawn", std::bind(spawnProcess, std::ref(std::cin), std::ref(processes))});
+		cmds.insert({ "area-on", std::bind(calcAreaOn, std::ref(std::cin), std::cref(processes), std::cref(sets))});
 	}
 }
 
@@ -30,7 +32,7 @@ int main()
 	sets_map sets;
   processes_map processes;
   statuses_map statuses;
-	initCmds(cmds, circles, sets);
+	initCmds(cmds, circles, sets, processes);
 
 	std::string command;
 	while (!(std::cin >> command).eof())

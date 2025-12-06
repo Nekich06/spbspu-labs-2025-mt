@@ -109,7 +109,8 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, cons
   size_t bytes = 0;
   while (bytes < message.size())
   {
-    if (int ret = write(to_pipe_fds[1], message.c_str() + bytes, message.size() - bytes); ret < 0)
+    int ret = write(to_pipe_fds[1], message.c_str() + bytes, message.size() - bytes);
+    if (ret < 0)
     {
       close(to_pipe_fds[1]);
       throw std::runtime_error("Write failed: ");

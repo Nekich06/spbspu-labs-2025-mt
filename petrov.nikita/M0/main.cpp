@@ -1,15 +1,18 @@
+#include <random>
 #include <string>
 #include <iostream>
 #include <data_types.hpp>
+#include "calculations_of_set_area.hpp"
 
 int main(const int argc, const char * const * argv)
 {
   using namespace petrov;
   sets_map sets;
-
-  int seed = 0, tries = 0, threads = 0;
+  long int seed = 0, tries = 0, threads = 0;
   size_t circles_num;
+
   seed = std::stoi(argv[1]);
+  std::srand(seed);
 
   while (!std::cin.eof())
   {
@@ -34,5 +37,7 @@ int main(const int argc, const char * const * argv)
     std::getline(std::cin, tries_str, ';');
     threads = std::stoi(threads_str, nullptr, 10);
     tries = std::stoi(tries_str, nullptr, 10);
+
+    std::pair< double, double > results = calculateSetArea(set, tries, threads);
   }
 }
