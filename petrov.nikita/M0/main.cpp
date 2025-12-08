@@ -39,5 +39,6 @@ int main(const int argc, const char * const * argv)
     tries = std::stoi(tries_str, nullptr, 10);
 
     std::pair< double, double > results = calculateSetArea(set, tries, threads);
+    std::cout << results.first << ';' << results.second << ';';
   }
 }

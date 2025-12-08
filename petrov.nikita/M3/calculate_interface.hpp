@@ -10,12 +10,12 @@
 namespace petrov
 {
   using processes_map = std::map< std::string, Process >;
-  using statuses_map = std::map< std::string, Calculation >;
+  using calcs_map = std::map< std::string, Calculation >;
 
 	void spawnProcess(std::istream & in, processes_map & processes);
-	void calcAreaOn(std::istream & in, const processes_map & processes, const sets_map & sets);
-	std::ostream & getStatus(std::istream & in);
-	std::ostream & waitEndOfProcess(std::istream & in);
+	void calcAreaOn(std::istream & in, const processes_map & processes, calcs_map & calcs, const sets_map & sets);
+	std::ostream & getStatus(std::ostream & out, std::istream & in);
+	std::ostream & waitResultAndPrint(std::ostream & out, std::istream & in, const processes_map & processes, calcs_map & calcs);
 }
 
 #endif

@@ -1,6 +1,29 @@
 #include "calculate_interface.hpp"
+#include <iomanip>
 #include <cstring>
 #include "sets_parser.hpp"
+
+namespace
+{
+  class StreamGuard
+  {
+  public:
+    StreamGuard(std::basic_ios< char > & s):
+      s_(s),
+      precision_(s.precision()),
+      flags_(s.flags())
+    {}
+    ~StreamGuard()
+    {
+      s_.precision(precision_);
+      s_.flags(flags_);
+    }
+  private:
+    std::basic_ios< char > & s_;
+    std::streamsize precision_;
+    std::basic_ios< char >::fmtflags flags_;
+  };
+}
 
 void petrov::spawnProcess(std::istream & in, processes_map & processes)
 {
@@ -65,7 +88,10 @@ void petrov::spawnProcess(std::istream & in, processes_map & processes)
     }
     close(from_pipe_fds[1]);
 
-    execl("M0", name.c_str(), seed, 0);
+    if (execl("M0", name.c_str(), seed, NULL) == -1)
+    {
+      throw std::runtime_error("Process start failed");
+    }
   }
   else
   {
@@ -77,7 +103,7 @@ void petrov::spawnProcess(std::istream & in, processes_map & processes)
   }
 }
 
-void petrov::calcAreaOn(std::istream & in, const processes_map & processes, const sets_map & sets)
+void petrov::calcAreaOn(std::istream & in, const processes_map & processes, calcs_map & calcs, const sets_map & sets)
 {
   std::string process_name;
   in >> process_name;
@@ -98,6 +124,8 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, cons
     throw std::invalid_argument("<INVALID COMMAND>");
   }
 
+  calcs.insert({ calc_name, Calculation{ Status::IN_PROGRESS, process_name, 0.0, 0.0 }});
+
   int threads_num, tries;
   in >> threads_num >> tries;
 
@@ -107,9 +135,10 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, cons
   int * to_pipe_fds = process_it->second.to_pipe_fds;
 
   size_t bytes = 0;
+  int ret = 0;
   while (bytes < message.size())
   {
-    int ret = write(to_pipe_fds[1], message.c_str() + bytes, message.size() - bytes);
+    ret = write(to_pipe_fds[1], message.c_str() + bytes, message.size() - bytes);
     if (ret < 0)
     {
       close(to_pipe_fds[1]);
@@ -120,4 +149,41 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, cons
       bytes += ret;
     }
   }
+}
+
+std::ostream & petrov::waitResultAndPrint(std::ostream & out, std::istream & in, const processes_map & processes, calcs_map & calcs)
+{
+  std::string calc_name;
+  in >> calc_name;
+
+  Calculation calculation = calcs.find(calc_name)->second;
+  std::string process_name = calculation.process_name;
+  auto process_it = processes.find(process_name);
+
+  int * from_pipe_fds = process_it->second.from_pipe_fds;
+
+  char buf[7];
+  size_t bytes = 0;
+  int ret = 0;
+  while (bytes < 8)
+  {
+    ret = read(from_pipe_fds[0], buf + bytes, sizeof(buf) - bytes);
+    if (ret < 0)
+    {
+      close(from_pipe_fds[0]);
+      throw std::runtime_error("Read failed: ");
+    }
+    else
+    {
+      bytes += ret;
+    }
+  }
+  std::pair< double, double > results = deserializeToResults(buf);
+  calculation.cvrg_area = results.first;
+  calculation.calc_time = results.second;
+  calculation.status = FINISHED;
+  StreamGuard out_guard(out);
+  out << std::fixed << std::setprecision(3);
+  out << results.first << " " << results.second;
+  return out;
 }

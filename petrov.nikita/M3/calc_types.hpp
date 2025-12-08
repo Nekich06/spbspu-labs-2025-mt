@@ -14,15 +14,16 @@ namespace petrov
     int * from_pipe_fds;
   };
 
+  enum Status
+  {
+    IN_PROGRESS,
+    FINISHED
+  };
+
   struct Calculation
   {
-    enum Statuses
-    {
-      IN_PROGRESS,
-      FINISHED
-    };
-
-    std::string name;
+    Status status;
+    std::string process_name;
     double calc_time;
     double cvrg_area;
 
