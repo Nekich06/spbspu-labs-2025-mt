@@ -15,7 +15,7 @@ namespace
 		return out;
 	}
 
-	std::ostream & printFrame(std::ostream & out, const petrov::point_t & l, const petrov::point_t & r)
+	std::ostream & printFrame(std::ostream & out, const petrov::point_t_int & l, const petrov::point_t_int & r)
 	{
 		out << "(" << l.x;
 		out << " " << l.y;
@@ -117,8 +117,8 @@ std::ostream & petrov::showShapeFrame(std::ostream & out, std::istream & in, con
 	try
 	{
 		circle_t requested = circles.at(name);
-		point_t left{ requested.x - requested.r, requested.y - requested.r };
-		point_t right{ requested.x + requested.r, requested.y + requested.r };
+		point_t_int left{ requested.x - requested.r, requested.y - requested.r };
+		point_t_int right{ requested.x + requested.r, requested.y + requested.r };
 		printFrame(out, left, right);
 	}
 	catch (const std::out_of_range & e)
@@ -135,8 +135,8 @@ std::ostream & petrov::showSetFrame(std::ostream & out, std::istream & in, const
 	try
 	{
 		circles_map requested = sets.at(name);
-		point_t left_min{ 0, 0 };
-		point_t right_max{ 0, 0 };
+		point_t_int left_min{ 0, 0 };
+		point_t_int right_max{ 0, 0 };
 		for (auto it = requested.cbegin(); it != requested.cend(); ++it)
 		{
 			left_min.x = std::min(left_min.x, it->second.x - it->second.r);

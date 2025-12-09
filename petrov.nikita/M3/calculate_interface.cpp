@@ -1,6 +1,7 @@
 #include "calculate_interface.hpp"
 #include <iomanip>
 #include <cstring>
+#include <memory>
 #include "sets_parser.hpp"
 
 namespace
@@ -88,9 +89,10 @@ void petrov::spawnProcess(std::istream & in, processes_map & processes)
     }
     close(from_pipe_fds[1]);
 
-    if (execl("M0", name.c_str(), seed, NULL) == -1)
+    std::string seed_str = std::to_string(seed);
+    if (execl("/home/nekich06/spbspu-labs-2025-mt/out/petrov.nikita/M0/lab", name.c_str(), seed_str.c_str(), NULL) == -1)
     {
-      throw std::runtime_error("Process start failed");
+      throw std::runtime_error("Process start failed: ");
     }
   }
   else
@@ -100,6 +102,7 @@ void petrov::spawnProcess(std::istream & in, processes_map & processes)
     close(from_pipe_fds[1]);
     from_pipe_fds[1] = -1;
     processes.insert({ name, Process{ child_pid, to_pipe_fds, from_pipe_fds } });
+    std::cout << "CHILD PROCESS STARTED\n";
   }
 }
 
@@ -131,7 +134,8 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, calc
 
   std::string message;
   serializeToMsg(message, set_it->second, threads_num, tries);
-
+  std::cout << "MESSAGE IS: " << message << '\n';
+  std::cout << "MESSAGE SIZE IS: " << message.size() << '\n';
   int * to_pipe_fds = process_it->second.to_pipe_fds;
 
   size_t bytes = 0;
@@ -147,6 +151,8 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, calc
     else
     {
       bytes += ret;
+      std::cout << "Writing data to process...\n";
+      std::cout << "Bytes written: " << bytes << '\n';
     }
   }
 }
@@ -162,28 +168,36 @@ std::ostream & petrov::waitResultAndPrint(std::ostream & out, std::istream & in,
 
   int * from_pipe_fds = process_it->second.from_pipe_fds;
 
-  char buf[7];
-  size_t bytes = 0;
-  int ret = 0;
-  while (bytes < 8)
+  int ret = 1;
+  double cvrg_area = 0.0;
+  double * ptr_cvrg_area = std::addressof(cvrg_area);
+  while (ret != 0)
   {
-    ret = read(from_pipe_fds[0], buf + bytes, sizeof(buf) - bytes);
+    std::cout << "Reading results from process...\n";
+    ret = read(from_pipe_fds[0], ptr_cvrg_area, sizeof(cvrg_area));
     if (ret < 0)
     {
       close(from_pipe_fds[0]);
       throw std::runtime_error("Read failed: ");
     }
-    else
+  }
+  double calc_time = 0.0;
+  double * ptr_calc_time = std::addressof(calc_time);
+  ret = 1;
+  while (ret != 0)
+  {
+    std::cout << "Reading results from process...\n";
+    ret = read(from_pipe_fds[0], ptr_calc_time, sizeof(calc_time));
+    if (ret < 0)
     {
-      bytes += ret;
+      close(from_pipe_fds[0]);
+      throw std::runtime_error("Read failed: ");
     }
   }
-  std::pair< double, double > results = deserializeToResults(buf);
-  calculation.cvrg_area = results.first;
-  calculation.calc_time = results.second;
   calculation.status = FINISHED;
   StreamGuard out_guard(out);
+  out << "RESULTS\n";
   out << std::fixed << std::setprecision(3);
-  out << results.first << " " << results.second;
+  out << cvrg_area << " " << calc_time;
   return out;
 }

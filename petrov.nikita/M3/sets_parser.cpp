@@ -3,16 +3,16 @@
 
 void petrov::serializeToMsg(std::string & message, const circles_map & set, int threads_num, int tries)
 {
-  message += set.size() + ';';
+  message += std::to_string(set.size()) + ';';
   for (auto it = set.cbegin(); it != set.cend(); ++it)
   {
     message += it->first + ';';
-    message += it->second.r + ';';
-    message += it->second.x + ';';
-    message += it->second.y + ';';
+    message += std::to_string(it->second.r) + ';';
+    message += std::to_string(it->second.x) + ';';
+    message += std::to_string(it->second.y) + ';';
   }
-  message += threads_num + ';';
-  message += tries + ';';
+  message += std::to_string(threads_num) + ';';
+  message += std::to_string(tries) + ';';
 }
 
 std::pair< double, double > petrov::deserializeToResults(char * message)

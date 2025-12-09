@@ -10,12 +10,12 @@ namespace
   using gen_t = std::mt19937;
   using dis_t = std::uniform_real_distribution<>;
 
-  double getDistanceFromCircleCenter(const petrov::point_t & point)
+  double getDistanceFromCircleCenter(const petrov::point_t_dbl & point)
   {
     return std::sqrt(point.x * point.x + point.y * point.y);
   }
 
-  bool doesPointBelongToCircle(const petrov::point_t & point, int radius)
+  bool doesPointBelongToCircle(const petrov::point_t_dbl & point, int radius)
   {
     return getDistanceFromCircleCenter(point) < radius;
   }
@@ -29,7 +29,7 @@ namespace
 
     for (long long int i = 0; i < tries_num; ++i)
     {
-      petrov::point_t point{ dis(gen), dis(gen) };
+      petrov::point_t_dbl point{ dis(gen), dis(gen) };
       if (doesPointBelongToCircle(point, radius))
       {
         ++inside_points;
@@ -83,5 +83,5 @@ std::pair< double, double > petrov::calculateSetArea(const circles_map & set, lo
   auto duration = fpMilliseconds(stop - start);
   auto time = duration.count();
 
-  return std::make_pair(time, set_area);
+  return std::make_pair(set_area, time);
 }
