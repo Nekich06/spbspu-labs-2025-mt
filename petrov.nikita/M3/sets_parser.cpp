@@ -6,7 +6,6 @@ void petrov::serializeToMsg(std::string & message, const circles_map & set, int 
   message += std::to_string(set.size()) + ';';
   for (auto it = set.cbegin(); it != set.cend(); ++it)
   {
-    message += it->first + ';';
     message += std::to_string(it->second.r) + ';';
     message += std::to_string(it->second.x) + ';';
     message += std::to_string(it->second.y) + ';';

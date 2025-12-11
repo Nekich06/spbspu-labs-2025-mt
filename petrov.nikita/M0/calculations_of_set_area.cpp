@@ -1,6 +1,5 @@
 #include "calculations_of_set_area.hpp"
 #include <numeric>
-#include <vector>
 #include <random>
 #include <thread>
 #include <chrono>
@@ -45,7 +44,7 @@ namespace
   }
 }
 
-std::pair< double, double > petrov::calculateSetArea(const circles_map & set, long long int tries_num, int threads_num)
+std::pair< double, double > petrov::calculateSetArea(const std::vector< circle_t > & set, long long int tries_num, int threads_num)
 {
   std::vector< int > seeds(threads_num, 0);
   for (size_t i = 0; i < seeds.size(); ++i)
@@ -67,12 +66,12 @@ std::pair< double, double > petrov::calculateSetArea(const circles_map & set, lo
     int i = 0;
     for (; i < threads_num - 1; ++i)
     {
-      threads.emplace_back(calculateInsidePointsNumTh, seeds[i], per_th, it->second.r, std::ref(inside_points[i]));
+      threads.emplace_back(calculateInsidePointsNumTh, seeds[i], per_th, it->r, std::ref(inside_points[i]));
     }
-    calculateInsidePointsNumTh(seeds[i], per_th + tries_num % threads_num, it->second.r, inside_points.back());
+    calculateInsidePointsNumTh(seeds[i], per_th + tries_num % threads_num, it->r, inside_points.back());
     for (auto && th : threads) th.join();
     size_t inside_points_sum = std::accumulate(inside_points.cbegin(), inside_points.cend(), 0);
-    circles_areas[area_index++] = calculateAreaOfCircle(it->second.r, inside_points_sum, tries_num);
+    circles_areas[area_index++] = calculateAreaOfCircle(it->r, inside_points_sum, tries_num);
     threads.clear();
   }
   double set_area = std::accumulate(circles_areas.cbegin(), circles_areas.cend(), 0.0);

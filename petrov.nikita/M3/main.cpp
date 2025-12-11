@@ -67,7 +67,7 @@ int main()
 			std::cin.clear();
 			std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
 			std::cerr << e.what() << strerror(errno) << std::endl;
-			return 1;
+			return 2;
 		}
 	}
 }

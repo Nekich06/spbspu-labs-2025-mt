@@ -30,48 +30,48 @@ namespace
 void petrov::createCircle(std::istream & in, circles_map & circles)
 {
 	std::string name;
-	int radius = 0, x = 0, y = 0;
-	if (!(in >> name >> radius >> x >> y))
+	in >> name;
+	if (circles.find(name) != circles.end())
 	{
 		throw std::invalid_argument("<INVALID COMMAND>");
 	}
-	try
+	int radius = 0, x = 0, y = 0;
+	if (!(in >> radius >> x >> y))
 	{
-		circles.insert({ name, circle_t{ radius, x, y } });
+		throw std::invalid_argument("<INVALID COMMAND>");
 	}
-	catch (const std::bad_alloc & e)
-	{
-		throw std::bad_alloc();
-	}
+	circles.insert({ name, circle_t{ radius, x, y } });
 }
 
 void petrov::createSet(std::istream & in, sets_map & sets, const circles_map & circles)
 {
 	std::string set_name;
+	in >> set_name;
+	if (sets.find(set_name) != sets.cend())
+	{
+		throw std::invalid_argument("<INVALID COMMAND>");
+	}
 	size_t set_size = 0;
-	if (!(in >> set_name >> set_size))
+	if (!(in >> set_size))
 	{
 		throw std::invalid_argument("<INVALID COMMAND>");
 	}
 
 	circles_map set;
-	std::string circle_name;
 	try
 	{
+		std::string circle_name;
 		for (size_t i = 0; i < set_size; ++i)
 		{
 			in >> circle_name;
 			set.insert({ circle_name, circles.at(circle_name) });
 		}
 	}
-	catch (const std::bad_alloc & e)
-	{
-		throw std::bad_alloc();
-	}
 	catch (const std::out_of_range & e)
 	{
 		throw std::invalid_argument("<INVALID COMMAND>");
 	}
+
 	sets.insert({ set_name, set });
 }
 
