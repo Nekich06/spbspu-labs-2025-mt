@@ -4,8 +4,8 @@
 #include <map>
 #include <iostream>
 #include <functional>
-#include <geometry.hpp>
-#include <data_types.hpp>
+#include "../common/geometry.hpp"
+#include "../common/data_types.hpp"
 
 namespace petrov
 {

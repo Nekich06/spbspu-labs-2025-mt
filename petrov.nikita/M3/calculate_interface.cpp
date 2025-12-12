@@ -88,12 +88,10 @@ void petrov::spawnProcess(std::istream & in, processes_map & processes)
     close(from_pipe_fds[1]);
 
     std::string seed_str = std::to_string(seed);
-    std::cerr << "Child process is running...";
     if (execl("/home/nekich06/spbspu-labs-2025-mt/out/petrov.nikita/M0/lab", name.c_str(), seed_str.c_str(), static_cast< char * >(0)) == -1)
     {
       throw std::runtime_error("Process replacing failed: ");
     }
-    std::cerr << "Process execution failed: " << strerror(errno);
   }
   else
   {
@@ -101,8 +99,8 @@ void petrov::spawnProcess(std::istream & in, processes_map & processes)
     to_pipe_fds[0] = -1;
     close(from_pipe_fds[1]);
     from_pipe_fds[1] = -1;
-    processes.insert({ name, Process{ child_pid, to_pipe_fds, from_pipe_fds } });
-    std::cout << "CHILD PROCESS STARTED\n";
+    processes.insert({ name, Process{ to_pipe_fds[1], from_pipe_fds[0] } });
+    std::cout << "[PARENT] - Child process started\n";
   }
 }
 
@@ -118,6 +116,11 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, calc
 
   std::string calc_name;
   in >> calc_name;
+  auto calc_it = calcs.find(calc_name);
+  if (calc_it != calcs.end())
+  {
+    throw std::invalid_argument("<INVALID COMMAND>");
+  }
 
   std::string set_name;
   in >> set_name;
@@ -134,17 +137,17 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, calc
 
   std::string message;
   serializeToMsg(message, set_it->second, threads_num, tries);
-  int * to_pipe_fds = process_it->second.to_pipe_fds;
+  int to_pipe_fd = process_it->second.to_pipe_fd;
 
   size_t bytes = 0;
   int ret = 0;
-  std::cout << "Write started...";
+  std::cout << "[PARENT] - Write started\n";
   while (bytes < message.size())
   {
-    ret = write(to_pipe_fds[1], message.c_str() + bytes, message.size() - bytes);
+    ret = write(to_pipe_fd, message.c_str() + bytes, message.size() - bytes);
     if (ret < 0)
     {
-      close(to_pipe_fds[1]);
+      close(to_pipe_fd);
       throw std::runtime_error("Write failed: ");
     }
     else
@@ -163,23 +166,23 @@ std::ostream & petrov::waitResultAndPrint(std::ostream & out, std::istream & in,
   std::string process_name = calculation.process_name;
   auto process_it = processes.find(process_name);
 
-  int * from_pipe_fds = process_it->second.from_pipe_fds;
+  int from_pipe_fd = process_it->second.from_pipe_fd;
 
   int ret = 1;
   double cvrg_area = 0.0;
   while (ret != 0)
   {
-    std::cout << "Reading coverage area from process...\n";
-    ret = read(from_pipe_fds[0], &cvrg_area, sizeof(cvrg_area));
+    std::cout << "[PARENT] - Reading coverage area from process...\n";
+    ret = read(from_pipe_fd, &cvrg_area, sizeof(cvrg_area));
     if (ret < 0)
     {
-      close(from_pipe_fds[0]);
+      close(from_pipe_fd);
       throw std::runtime_error("Read failed: ");
     }
   }
   calculation.status = FINISHED;
   StreamGuard out_guard(out);
-  out << "RESULTS\n";
+  out << "[PARENT] - RESULTS\n";
   out << std::fixed << std::setprecision(3);
   out << cvrg_area;
   return out;

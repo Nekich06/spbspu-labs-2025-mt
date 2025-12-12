@@ -9,9 +9,8 @@ namespace petrov
 {
   struct Process
   {
-    pid_t id;
-    int * to_pipe_fds;
-    int * from_pipe_fds;
+    int to_pipe_fd;
+    int from_pipe_fd;
   };
 
   enum Status

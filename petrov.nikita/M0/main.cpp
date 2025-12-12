@@ -2,7 +2,7 @@
 #include <random>
 #include <string>
 #include <iostream>
-#include <geometry.hpp>
+#include "../common/geometry.hpp"
 #include "calculations_of_set_area.hpp"
 
 int main(const int argc, const char * const * argv)
@@ -19,9 +19,14 @@ int main(const int argc, const char * const * argv)
 
   while (!(std::cin.eof()))
   {
+    std::cerr << "[CHILD] - CYCLE STARTED...\n";
     size_t circles_num;
-    std::cin >> circles_num;
+    if ((std::cin >> circles_num).eof())
+    {
+      break;
+    }
     std::cin.ignore(1);
+    std::cerr << "[CHILD] - DESERIALIZING DATA\n";
     std::vector< circle_t > set;
     set.reserve(circles_num - 1);
     for (size_t i = 0; i < circles_num; ++i)
@@ -41,7 +46,11 @@ int main(const int argc, const char * const * argv)
     std::cin >> tries;
     std::cin.ignore(1);
 
+    std::cerr << "[CHILD] - Threads number is " << threads << "; Tries number is " << tries << "\n";
+
     std::pair< double, double > results = calculateSetArea(set, tries, threads);
     std::cout << results.first;
+    std::cerr << "[CHILD] - AREA CALCULATED: " << results.first << '\n';
   }
+  std::cerr << "[CHILD] - CHILD PROCESS ENDS\n";
 }
