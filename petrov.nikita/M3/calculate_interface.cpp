@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <cstring>
 #include <memory>
-#include "sets_parser.hpp"
+#include <serializer.hpp>
 
 namespace
 {
@@ -136,7 +136,7 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, calc
   in >> threads_num >> tries;
 
   std::string message;
-  serializeToMsg(message, set_it->second, threads_num, tries);
+  serializeSetToMsg(message, set_it->second, threads_num, tries);
   int to_pipe_fd = process_it->second.to_pipe_fd;
 
   size_t bytes = 0;
@@ -168,22 +168,75 @@ std::ostream & petrov::waitResultAndPrint(std::ostream & out, std::istream & in,
 
   int from_pipe_fd = process_it->second.from_pipe_fd;
 
-  int ret = 1;
-  double cvrg_area = 0.0;
-  while (ret != 0)
+
+  std::string metadata;
+  char probably_decimal = ' ';
+  int ret = 0;
+  while (probably_decimal != ';')
   {
-    std::cout << "[PARENT] - Reading coverage area from process...\n";
-    ret = read(from_pipe_fd, &cvrg_area, sizeof(cvrg_area));
+    ret = read(from_pipe_fd, &probably_decimal, sizeof(char));
     if (ret < 0)
     {
       close(from_pipe_fd);
-      throw std::runtime_error("Read failed: ");
+      throw std::runtime_error("Metadata read failed: ");
+    }
+    else if (probably_decimal == ';')
+    {
+      break;
+    }
+    else
+    {
+      metadata += probably_decimal;
     }
   }
+
+  size_t msg_size = std::stoul(metadata);
+  out << "[PARENT] - Message size is " << msg_size << '\n';
+
+  std::string cvrg_area_str;
+  char symbol = ' ';
+  while (symbol != ';')
+  {
+    ret = read(from_pipe_fd, &symbol, sizeof(char));
+    if (ret < 0)
+    {
+      close(from_pipe_fd);
+      throw std::runtime_error("Metadata read failed: ");
+    }
+    else if (symbol == ';')
+    {
+      break;
+    }
+    else
+    {
+      cvrg_area_str += symbol;
+    }
+  }
+  std::string calc_time_str;
+  symbol = ' ';
+  while (symbol != ';')
+  {
+    ret = read(from_pipe_fd, &symbol, sizeof(char));
+    if (ret < 0)
+    {
+      close(from_pipe_fd);
+      throw std::runtime_error("Metadata read failed: ");
+    }
+    else if (symbol == ';')
+    {
+      break;
+    }
+    else
+    {
+      calc_time_str += symbol;
+    }
+  }
+  out << "[PARENT] - SUCESSFUL READ\n";
   calculation.status = FINISHED;
+  std::pair< double, double > results = deserializeToResults(cvrg_area_str, calc_time_str);
   StreamGuard out_guard(out);
   out << "[PARENT] - RESULTS\n";
   out << std::fixed << std::setprecision(3);
-  out << cvrg_area;
+  out << results.first << ' ' << results.second << '\n';
   return out;
 }

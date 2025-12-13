@@ -4,6 +4,7 @@
 #include <iostream>
 #include "../common/geometry.hpp"
 #include "calculations_of_set_area.hpp"
+#include <serializer.hpp>
 
 int main(const int argc, const char * const * argv)
 {
@@ -49,8 +50,12 @@ int main(const int argc, const char * const * argv)
     std::cerr << "[CHILD] - Threads number is " << threads << "; Tries number is " << tries << "\n";
 
     std::pair< double, double > results = calculateSetArea(set, tries, threads);
-    std::cout << results.first;
-    std::cerr << "[CHILD] - AREA CALCULATED: " << results.first << '\n';
+    double cvrg_area = results.first;
+    double calc_time = results.second;
+    std::cerr << "AREA CALCULATED: " << cvrg_area << "; TIME ELAPSED: " << calc_time << '\n';
+    std::pair< std::string, std::string > metaMsg = serializeResultsToMetadataAndMsg(cvrg_area, calc_time);
+    std::cerr << metaMsg.first << " " << metaMsg.second << '\n';
+    std::cout << metaMsg.first.c_str() << ';' << metaMsg.second.c_str();
   }
   std::cerr << "[CHILD] - CHILD PROCESS ENDS\n";
 }
