@@ -14,13 +14,10 @@ void petrov::serializeSetToMsg(std::string & message, const circles_map & set, i
   message += std::to_string(tries) + ';';
 }
 
-std::pair< std::string, std::string > petrov::serializeResultsToMetadataAndMsg(double cvrg_area, double calc_time)
+void petrov::serializeResultsToMsg(std::string & message, double cvrg_area, double calc_time)
 {
-  std::string message;
   message += std::to_string(cvrg_area) + ';';
   message += std::to_string(calc_time) + ';';
-  std::string metadata = std::to_string(message.size());
-  return std::make_pair(metadata, message);
 }
 
 std::pair< double, double > petrov::deserializeToResults(const std::string & cvrg_area_str, const std::string & calc_time_str)

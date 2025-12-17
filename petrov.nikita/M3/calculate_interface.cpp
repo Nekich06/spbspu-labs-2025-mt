@@ -100,7 +100,7 @@ void petrov::spawnProcess(std::istream & in, processes_map & processes)
     close(from_pipe_fds[1]);
     from_pipe_fds[1] = -1;
     processes.insert({ name, Process{ to_pipe_fds[1], from_pipe_fds[0] } });
-    std::cout << "[PARENT] - Child process started\n";
+    // std::cout << "[PARENT] - Child process started\n";
   }
 }
 
@@ -116,8 +116,7 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, calc
 
   std::string calc_name;
   in >> calc_name;
-  auto calc_it = calcs.find(calc_name);
-  if (calc_it != calcs.end())
+  if (calcs.find(calc_name) != calcs.end())
   {
     throw std::invalid_argument("<INVALID COMMAND>");
   }
@@ -130,7 +129,7 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, calc
     throw std::invalid_argument("<INVALID COMMAND>");
   }
 
-  calcs.insert({ calc_name, Calculation{ Status::IN_PROGRESS, process_name, 0.0, 0.0 }});
+  calcs.insert({ calc_name, Calculation{ process_name }});
 
   int threads_num = 0, tries = 0;
   in >> threads_num >> tries;
@@ -141,7 +140,7 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, calc
 
   size_t bytes = 0;
   int ret = 0;
-  std::cout << "[PARENT] - Write started\n";
+  // std::cout << "[PARENT] - Write started\n";
   while (bytes < message.size())
   {
     ret = write(to_pipe_fd, message.c_str() + bytes, message.size() - bytes);
@@ -161,40 +160,23 @@ std::ostream & petrov::waitResultAndPrint(std::ostream & out, std::istream & in,
 {
   std::string calc_name;
   in >> calc_name;
+  auto calc_it = calcs.find(calc_name);
+  if (calc_it == calcs.end())
+  {
+    throw std::invalid_argument("<INVALID COMMAND>");
+  }
+  Calculation calculation = calc_it->second;
 
-  Calculation calculation = calcs.find(calc_name)->second;
-  std::string process_name = calculation.process_name;
+  std::string process_name = calculation.getCalculatorProcessName();
   auto process_it = processes.find(process_name);
 
   int from_pipe_fd = process_it->second.from_pipe_fd;
 
-
-  std::string metadata;
-  char probably_decimal = ' ';
-  int ret = 0;
-  while (probably_decimal != ';')
-  {
-    ret = read(from_pipe_fd, &probably_decimal, sizeof(char));
-    if (ret < 0)
-    {
-      close(from_pipe_fd);
-      throw std::runtime_error("Metadata read failed: ");
-    }
-    else if (probably_decimal == ';')
-    {
-      break;
-    }
-    else
-    {
-      metadata += probably_decimal;
-    }
-  }
-
-  size_t msg_size = std::stoul(metadata);
-  out << "[PARENT] - Message size is " << msg_size << '\n';
+  // out << "[PARENT] - Message size is " << msg_size << '\n';
 
   std::string cvrg_area_str;
   char symbol = ' ';
+  int ret = 0;
   while (symbol != ';')
   {
     ret = read(from_pipe_fd, &symbol, sizeof(char));
@@ -231,12 +213,13 @@ std::ostream & petrov::waitResultAndPrint(std::ostream & out, std::istream & in,
       calc_time_str += symbol;
     }
   }
-  out << "[PARENT] - SUCESSFUL READ\n";
-  calculation.status = FINISHED;
+  // out << "[PARENT] - SUCESSFUL READ\n";
   std::pair< double, double > results = deserializeToResults(cvrg_area_str, calc_time_str);
+  calculation.setCalculatedDataAndChangeStatus(results.first, results.second);
+
   StreamGuard out_guard(out);
-  out << "[PARENT] - RESULTS\n";
+  // out << "[PARENT] - RESULTS\n";
   out << std::fixed << std::setprecision(3);
-  out << results.first << ' ' << results.second << '\n';
+  out << calculation.getCoverageArea() << ' ' << calculation.getCalculationTime() << '\n';
   return out;
 }

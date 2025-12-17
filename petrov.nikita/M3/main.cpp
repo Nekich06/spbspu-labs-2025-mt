@@ -4,7 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include <unistd.h>
-#include "../common/geometry.hpp"
+#include <geometry.hpp>
 #include "sandbox_interface.hpp"
 #include "calculate_interface.hpp"
 

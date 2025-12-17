@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <utility>
-#include "../common/geometry.hpp"
+#include <geometry.hpp>
 
 namespace petrov
 {

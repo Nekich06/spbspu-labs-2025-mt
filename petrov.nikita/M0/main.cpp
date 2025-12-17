@@ -2,9 +2,9 @@
 #include <random>
 #include <string>
 #include <iostream>
-#include "../common/geometry.hpp"
-#include "calculations_of_set_area.hpp"
+#include <geometry.hpp>
 #include <serializer.hpp>
+#include "calculations_of_set_area.hpp"
 
 int main(const int argc, const char * const * argv)
 {
@@ -20,14 +20,14 @@ int main(const int argc, const char * const * argv)
 
   while (!(std::cin.eof()))
   {
-    std::cerr << "[CHILD] - CYCLE STARTED...\n";
+    // std::cerr << "[CHILD] - CYCLE STARTED...\n";
     size_t circles_num;
     if ((std::cin >> circles_num).eof())
     {
       break;
     }
     std::cin.ignore(1);
-    std::cerr << "[CHILD] - DESERIALIZING DATA\n";
+    // std::cerr << "[CHILD] - DESERIALIZING DATA\n";
     std::vector< circle_t > set;
     set.reserve(circles_num - 1);
     for (size_t i = 0; i < circles_num; ++i)
@@ -47,15 +47,15 @@ int main(const int argc, const char * const * argv)
     std::cin >> tries;
     std::cin.ignore(1);
 
-    std::cerr << "[CHILD] - Threads number is " << threads << "; Tries number is " << tries << "\n";
+    // std::cerr << "[CHILD] - Threads number is " << threads << "; Tries number is " << tries << "\n";
 
     std::pair< double, double > results = calculateSetArea(set, tries, threads);
     double cvrg_area = results.first;
     double calc_time = results.second;
-    std::cerr << "AREA CALCULATED: " << cvrg_area << "; TIME ELAPSED: " << calc_time << '\n';
-    std::pair< std::string, std::string > metaMsg = serializeResultsToMetadataAndMsg(cvrg_area, calc_time);
-    std::cerr << metaMsg.first << " " << metaMsg.second << '\n';
-    std::cout << metaMsg.first.c_str() << ';' << metaMsg.second.c_str();
+    // std::cerr << "AREA CALCULATED: " << cvrg_area << "; TIME ELAPSED: " << calc_time << '\n';
+    std::string message;
+    serializeResultsToMsg(message, cvrg_area, calc_time);
+    std::cout << message.c_str();
   }
-  std::cerr << "[CHILD] - CHILD PROCESS ENDS\n";
+  // std::cerr << "[CHILD] - CHILD PROCESS ENDS\n";
 }
