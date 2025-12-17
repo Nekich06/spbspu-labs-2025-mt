@@ -156,6 +156,30 @@ void petrov::calcAreaOn(std::istream & in, const processes_map & processes, calc
   }
 }
 
+std::ostream & petrov::getCalculationStatus(std::ostream & out, std::istream & in, const calcs_map & calcs)
+{
+  std::string calc_name;
+  in >> calc_name;
+  auto calc_it = calcs.find(calc_name);
+  if (calc_it == calcs.end())
+  {
+    throw std::invalid_argument("<INVALID COMMAND>");
+  }
+
+  const Calculation & calculation = calc_it->second;
+  StreamGuard out_guard(out);
+  out << std::fixed << std::setprecision(3);
+  switch (calculation.getStatus())
+  {
+    case Calculation::Status::IN_PROGRESS:
+      return out << "<IN PROGRESS>" << '\n';
+      break;
+    default:
+      return out << calculation.getCoverageArea() << ' ' << calculation.getCalculationTime() << '\n';
+  }
+}
+
+
 std::ostream & petrov::waitResultAndPrint(std::ostream & out, std::istream & in, const processes_map & processes, calcs_map & calcs)
 {
   std::string calc_name;
@@ -165,14 +189,16 @@ std::ostream & petrov::waitResultAndPrint(std::ostream & out, std::istream & in,
   {
     throw std::invalid_argument("<INVALID COMMAND>");
   }
-  Calculation calculation = calc_it->second;
+  Calculation & calculation = calc_it->second;
+  if (calculation.getStatus() == Calculation::Status::FINISHED)
+  {
+    return out << calculation.getCoverageArea() << ' ' << calculation.getCalculationTime() << '\n';
+  }
 
   std::string process_name = calculation.getCalculatorProcessName();
   auto process_it = processes.find(process_name);
 
   int from_pipe_fd = process_it->second.from_pipe_fd;
-
-  // out << "[PARENT] - Message size is " << msg_size << '\n';
 
   std::string cvrg_area_str;
   char symbol = ' ';

@@ -4,23 +4,23 @@ petrov::Calculation::Calculation(const std::string & process_name):
   process_name_(process_name)
 {}
 
-petrov::Status petrov::Calculation::getStatus()
+petrov::Calculation::Status petrov::Calculation::getStatus() const
 {
   return status_;
 }
 
-std::string petrov::Calculation::getCalculatorProcessName()
+std::string petrov::Calculation::getCalculatorProcessName() const
 {
   return process_name_;
 }
 
-double petrov::Calculation::getCoverageArea()
+double petrov::Calculation::getCoverageArea() const
 {
   return cvrg_area_;
 }
 
 
-double petrov::Calculation::getCalculationTime()
+double petrov::Calculation::getCalculationTime() const
 {
   return calc_time_;
 }

@@ -14,7 +14,7 @@ namespace petrov
 
 	void spawnProcess(std::istream & in, processes_map & processes);
 	void calcAreaOn(std::istream & in, const processes_map & processes, calcs_map & calcs, const sets_map & sets);
-	std::ostream & getStatus(std::ostream & out, std::istream & in);
+	std::ostream & getCalculationStatus(std::ostream & out, std::istream & in, const calcs_map & calcs);
 	std::ostream & waitResultAndPrint(std::ostream & out, std::istream & in, const processes_map & processes, calcs_map & calcs);
 }
 

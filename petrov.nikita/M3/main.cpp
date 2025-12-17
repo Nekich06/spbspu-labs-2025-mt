@@ -21,6 +21,7 @@ namespace
 		cmds.insert({ "frameset", std::bind(showSetFrame, std::ref(std::cout), std::ref(std::cin), std::cref(sets)) });
 		cmds.insert({ "spawn", std::bind(spawnProcess, std::ref(std::cin), std::ref(processes))});
 		cmds.insert({ "area-on", std::bind(calcAreaOn, std::ref(std::cin), std::cref(processes), std::ref(calculations), std::cref(sets))});
+		cmds.insert({ "status", std::bind(getCalculationStatus, std::ref(std::cout), std::ref(std::cin), std::cref(calculations))});
 		cmds.insert({ "wait", std::bind(waitResultAndPrint, std::ref(std::cout), std::ref(std::cin), std::cref(processes), std::ref(calculations))});
 	}
 }

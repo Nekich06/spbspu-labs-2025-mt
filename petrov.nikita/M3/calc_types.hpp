@@ -13,20 +13,20 @@ namespace petrov
     int from_pipe_fd;
   };
 
-  enum Status
-  {
-    IN_PROGRESS,
-    FINISHED
-  };
-
   struct Calculation
   {
+    enum Status
+    {
+      IN_PROGRESS,
+      FINISHED
+    };
+
     Calculation(const std::string & process_name);
 
-    Status getStatus();
-    std::string getCalculatorProcessName();
-    double getCoverageArea();
-    double getCalculationTime();
+    Status getStatus() const;
+    std::string getCalculatorProcessName() const;
+    double getCoverageArea() const;
+    double getCalculationTime() const;
     void setCalculatedDataAndChangeStatus(double cvrg_area, double calc_time);
 
   private:
