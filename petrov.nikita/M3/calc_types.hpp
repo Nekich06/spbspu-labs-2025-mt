@@ -2,8 +2,6 @@
 #define CALC_TYPES_HPP
 
 #include <string>
-#include <unistd.h>
-#include <iostream>
 
 namespace petrov
 {

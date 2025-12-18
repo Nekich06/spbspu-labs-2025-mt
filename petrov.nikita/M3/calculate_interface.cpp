@@ -1,7 +1,6 @@
 #include "calculate_interface.hpp"
 #include <iomanip>
-#include <cstring>
-#include <memory>
+#include <unistd.h>
 #include <serializer.hpp>
 
 namespace

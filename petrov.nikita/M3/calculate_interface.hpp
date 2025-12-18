@@ -2,10 +2,9 @@
 #define CALCULATE_INTERFACE_HPP
 
 #include <map>
-#include <unistd.h>
 #include <iostream>
+#include <sbox_types.hpp>
 #include "calc_types.hpp"
-#include "sandbox_interface.hpp"
 
 namespace petrov
 {

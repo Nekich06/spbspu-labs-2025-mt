@@ -1,5 +1,4 @@
 #include "serializer.hpp"
-#include <string>
 
 void petrov::serializeSetToMsg(std::string & message, const circles_map & set, int threads_num, int tries)
 {

@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <utility>
-#include <geometry.hpp>
+#include <sbox_types.hpp>
 
 namespace petrov
 {

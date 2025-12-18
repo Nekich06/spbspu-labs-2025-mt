@@ -1,4 +1,5 @@
 #include "calculations_of_set_area.hpp"
+#include <cstddef>
 #include <numeric>
 #include <random>
 #include <thread>

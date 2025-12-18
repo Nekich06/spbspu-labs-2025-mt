@@ -2,7 +2,7 @@
 #include <random>
 #include <string>
 #include <iostream>
-#include <geometry.hpp>
+#include <sbox_types.hpp>
 #include <serializer.hpp>
 #include "calculations_of_set_area.hpp"
 
