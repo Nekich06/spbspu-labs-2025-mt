@@ -2,13 +2,14 @@
 #define CALC_TYPES_HPP
 
 #include <string>
+#include "posix_api_handle.hpp"
 
 namespace petrov
 {
   struct Process
   {
-    int to_pipe_fd;
-    int from_pipe_fd;
+    PosixApiHandle to_pipe_fd;
+    PosixApiHandle from_pipe_fd;
   };
 
   struct Calculation

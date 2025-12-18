@@ -1,7 +1,9 @@
 #include "calculate_interface.hpp"
+#include <utility>
 #include <iomanip>
 #include <unistd.h>
 #include <serializer.hpp>
+#include "posix_api_handle.hpp"
 
 namespace
 {
@@ -40,51 +42,45 @@ void petrov::spawnProcess(std::istream & in, processes_map & processes)
     throw std::invalid_argument("<INVALID COMMAND>");
   }
 
+
   int to_pipe_fds[2];
   if (pipe(to_pipe_fds) < 0)
   {
     throw std::runtime_error("To-child pipe creation failed: ");
   }
+  PosixApiHandle child_from_parent(to_pipe_fds[0]);
+  PosixApiHandle parent_to_child(to_pipe_fds[1]);
+
   int from_pipe_fds[2];
   if (pipe(from_pipe_fds) < 0)
   {
-    close(to_pipe_fds[0]);
-    close(to_pipe_fds[1]);
     throw std::runtime_error("From-child pipe creation failed: ");
   }
+  PosixApiHandle parent_from_child(from_pipe_fds[0]);
+  PosixApiHandle child_to_parent(from_pipe_fds[1]);
 
   pid_t child_pid = fork();
 
   if (child_pid < 0)
   {
-    close(to_pipe_fds[0]);
-    close(to_pipe_fds[1]);
-    close(from_pipe_fds[0]);
-    close(from_pipe_fds[1]);
     throw std::runtime_error("Process start failed: ");
   }
 
   if (child_pid == 0)
   {
-    close(to_pipe_fds[1]);
-    to_pipe_fds[1] = -1;
-    if (dup2(to_pipe_fds[0], STDIN_FILENO) < 0)
+    parent_to_child.closeHandle();
+    if (dup2(child_from_parent, STDIN_FILENO) < 0)
     {
-      close(to_pipe_fds[0]);
-      close(from_pipe_fds[0]);
-      close(from_pipe_fds[1]);
       throw std::runtime_error("Bad duplicating: ");
     }
-    close(to_pipe_fds[0]);
+    child_from_parent.closeHandle();
 
-    close(from_pipe_fds[0]);
-    from_pipe_fds[0] = -1;
-    if (dup2(from_pipe_fds[1], STDOUT_FILENO) < 0)
+    parent_from_child.closeHandle();
+    if (dup2(child_to_parent, STDOUT_FILENO) < 0)
     {
-      close(from_pipe_fds[1]);
       throw std::runtime_error("Bad duplicating: ");
     }
-    close(from_pipe_fds[1]);
+    child_to_parent.closeHandle();
 
     std::string seed_str = std::to_string(seed);
     if (execl("/home/nekich06/spbspu-labs-2025-mt/out/petrov.nikita/M0/lab", name.c_str(), seed_str.c_str(), static_cast< char * >(0)) == -1)
@@ -94,11 +90,9 @@ void petrov::spawnProcess(std::istream & in, processes_map & processes)
   }
   else
   {
-    close(to_pipe_fds[0]);
-    to_pipe_fds[0] = -1;
-    close(from_pipe_fds[1]);
-    from_pipe_fds[1] = -1;
-    processes.insert({ name, Process{ to_pipe_fds[1], from_pipe_fds[0] } });
+    child_from_parent.closeHandle();
+    child_to_parent.closeHandle();
+    processes.insert({ name, Process{ PosixApiHandle(std::move(parent_to_child)), PosixApiHandle(std::move(parent_from_child)) } });
     // std::cout << "[PARENT] - Child process started\n";
   }
 }

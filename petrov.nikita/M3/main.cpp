@@ -3,14 +3,14 @@
 #include <limits>
 #include <cstring>
 #include <iostream>
-#include <unistd.h>
 #include <sbox_types.hpp>
 #include "sandbox_interface.hpp"
 #include "calculate_interface.hpp"
 
+using namespace petrov;
+
 namespace
 {
-  using namespace petrov;
 	void initCmds(commands_map & cmds, circles_map & circles, sets_map & sets, processes_map & processes, calcs_map & calculations)
 	{
 		cmds.insert({ "circle", std::bind(createCircle, std::ref(std::cin), std::ref(circles)) });
@@ -28,7 +28,6 @@ namespace
 
 int main()
 {
-  using namespace petrov;
 	commands_map cmds;
 	circles_map circles;
 	sets_map sets;
